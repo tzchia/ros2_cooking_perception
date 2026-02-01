@@ -1,4 +1,6 @@
 dataset/interview_perception_exam01_0.db3
 output/**/*.png
 *.pt
-dataset_yolo/images/*/*.png
+dataset_yolo*/images/*/*.png
+output/
+weights/

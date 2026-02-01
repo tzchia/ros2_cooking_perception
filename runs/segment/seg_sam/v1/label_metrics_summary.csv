@@ -1,0 +1,6 @@
+,area_ratio,area_ratio,components,components
+,mean,std,mean,std
+method,,,,
+sam,0.3155,0.0881,134.66,88.8378
+thermal,0.2364,0.0243,3.7,1.7173
+thermal_cluster,0.2236,0.0241,2.94,0.8668
