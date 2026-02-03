@@ -50,16 +50,71 @@ Notebook: `notebooks/train_segmentation.ipynb` (run locally with Jupyter).
 ### Workflow Overview
 
 1. Load RGB + thermal pairs from `output/`.
-2. Select a mask generation method (`thermal`, `thermal_cluster`, `sam`).
+2. Select a mask generation method (`thermal`, `thermal_cluster`, `sam`, `sam_v2`, `sam_v3`, `sam_v4`).
 3. Preview the mask quality.
 4. Export YOLO segmentation labels to `dataset_yolo_<method>/`.
 5. Train YOLOv8-seg with the exported labels.
+
+### CLI Workflow (split across scripts)
+
+We now persist a **shared train/val split** so that different methods reuse the
+same images (labels differ by method). The split file is saved at:
+
+- `output/split_train_val.csv`
+
+Use `--refresh-split` to regenerate the split, or keep it to ensure
+repeatability across methods.
+
+**Export labels (single method):**
+
+```bash
+python3 scripts/seg_export.py \
+  --mask-method sam_v4 \
+  --val-ratio 0.1 \
+  --split-seed 0
+```
+
+**Export labels (all methods):**
+
+```bash
+python3 scripts/seg_export.py \
+  --export-all \
+  --val-ratio 0.1 \
+  --split-seed 0
+```
+
+**Benchmark (compare / metrics / label-all):**
+
+```bash
+python3 scripts/seg_benchmark.py --compare
+```
+
+```bash
+python3 scripts/seg_benchmark.py --metrics
+```
+
+```bash
+python3 scripts/seg_benchmark.py --label-all --val-ratio 0.1 --split-seed 0
+```
+
+**Training:**
+
+```bash
+python3 scripts/seg_train.py --train --mask-method thermal_cluster
+```
+
+```bash
+python3 scripts/seg_train.py --train-all
+```
 
 ### Mask Methods
 
 - **thermal**: fixed threshold on normalized thermal intensity.
 - **thermal_cluster**: 1D k-means on thermal intensity, pick hottest cluster.
-- **sam**: promptable segmentation (SAM) using thermal hotspots + box prompts on RGB.
+- **sam (v1)**: SAM automatic mask generator (no prompts) with optional thresholds.
+- **sam_v2**: thermal-guided SAM (centroid + rough box prompt).
+- **sam_v3**: tuned SAM auto masks + center/area filtering for noise suppression.
+- **sam_v4**: Grounding DINO text prompt → box → SAM mask.
 
 ### Label Metrics (Heuristic)
 
@@ -104,6 +159,17 @@ masks but is highly fragmented; it likely needs better prompts or post-processin
 1. Install SAM: https://github.com/facebookresearch/segment-anything
 2. Download a checkpoint (e.g., `sam_vit_b_01ec64.pth`) to `ROOT/weights/`.
 3. Ensure `torch` is installed and CUDA is available for speed.
+
+### Grounding DINO Setup (for `sam_v4`)
+
+Run the helper script to clone + install Grounding DINO dependencies:
+
+```bash
+bash scripts/install_grounding_dino.sh
+```
+
+Then download a checkpoint (e.g. `groundingdino_swint_ogc.pth`) to `ROOT/weights/`
+and pass the config/ckpt paths when running `sam_v4`.
 
 ## Library Survey
 

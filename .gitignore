@@ -4,3 +4,4 @@ output/**/*.png
 dataset_yolo*/images/*/*.png
 output/
 weights/
+third_party/

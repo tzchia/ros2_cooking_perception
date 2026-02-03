@@ -1,5 +1,0 @@
-path: /data3/TC/ros2_cooking_perception/dataset_yolo
-train: images/train
-val: images/train
-names:
-  0: cookware
