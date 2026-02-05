@@ -30,13 +30,13 @@ def parse_args() -> argparse.Namespace:
         "--mask-method",
         type=str,
         default="thermal",
-        choices=["thermal", "thermal_cluster", "sam", "sam_v2", "sam_v3", "sam_v4"],
+        choices=["thermal", "thermal_cluster", "sam", "sam_v2", "sam_v3", "groundingdino", "florence2", "yolo_world_sam"],
         help="Mask generation method",
     )
     parser.add_argument(
         "--methods",
         type=str,
-        default="thermal,thermal_cluster,sam,sam_v2,sam_v3,sam_v4",
+        default="thermal,thermal_cluster,sam,sam_v2,sam_v3,groundingdino,florence2,yolo_world_sam",
         help="Comma-separated method list for multi-run actions",
     )
     parser.add_argument("--thermal-low", type=float, default=0.6)
@@ -92,22 +92,60 @@ def parse_args() -> argparse.Namespace:
         "--dino-config",
         type=Path,
         default="third_party/GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py",
-        help="Grounding DINO config path (required for sam_v4)",
+        help="Grounding DINO config path (required for groundingdino)",
     )
     parser.add_argument(
         "--dino-checkpoint",
         type=Path,
         default="weights/groundingdino_swint_ogc.pth",
-        help="Grounding DINO checkpoint path (required for sam_v4)",
+        help="Grounding DINO checkpoint path (required for groundingdino)",
     )
     parser.add_argument(
         "--dino-text-prompt",
         type=str,
-        default="pan",
+        default="black wok, cooking pot",
         help="Grounding DINO text prompt, e.g. 'pan' or 'wok'",
     )
-    parser.add_argument("--dino-box-threshold", type=float, default=0.35)
+    parser.add_argument("--dino-box-threshold", type=float, default=0.35) # original 0.35
     parser.add_argument("--dino-text-threshold", type=float, default=0.25)
+    # Florence-2 arguments
+    parser.add_argument(
+        "--florence2-model-id",
+        type=str,
+        default="microsoft/Florence-2-large",
+        help="Florence-2 model ID (required for florence2)",
+    )
+    parser.add_argument(
+        "--florence2-text-prompt",
+        type=str,
+        default="black wok,cooking pot",
+        help="Florence-2 text prompt for referring expression segmentation",
+    )
+    # YOLO-World + SAM arguments
+    parser.add_argument(
+        "--yolo-world-model",
+        type=str,
+        default="yolov8s-world.pt",
+        help="YOLO-World model checkpoint (required for yolo_world_sam)",
+    )
+    parser.add_argument(
+        "--yolo-world-sam-model",
+        type=str,
+        default="mobile_sam.pt",
+        help="SAM model for YOLO-World segmentation (mobile_sam.pt or fastsam.pt)",
+    )
+    parser.add_argument(
+        "--yolo-world-classes",
+        type=str,
+        default="black wok,cooking pot",
+        help="Comma-separated classes for YOLO-World (e.g., 'black wok,cooking pot')",
+    )
+    parser.add_argument(
+        "--yolo-world-conf",
+        type=float,
+        default=0.15,
+        help="YOLO-World confidence threshold (lower = more detections)",
+    )
     parser.add_argument(
         "--sam-checkpoint",
         type=Path,
@@ -118,7 +156,19 @@ def parse_args() -> argparse.Namespace:
         "--dataset-dir",
         type=Path,
         default=None,
-        help="Output dataset folder (default: <root>/dataset_yolo_<method>)",
+        help="Output dataset folder (default: <root>/dataset_yolo/<method>)",
+    )
+    parser.add_argument(
+        "--share-images",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Share images in <root>/dataset_yolo/images and symlink per-method images/",
+    )
+    parser.add_argument(
+        "--shared-images-dir",
+        type=Path,
+        default=Path("dataset_yolo/images"),
+        help="Override shared images directory (default: <root>/dataset_yolo/images)",
     )
     parser.add_argument(
         "--val-ratio",
@@ -147,7 +197,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--compare-methods",
         type=str,
-        default="thermal,thermal_cluster,sam,sam_v2,sam_v3,sam_v4",
+        default="thermal,thermal_cluster,sam,sam_v2,sam_v3,groundingdino,florence2,yolo_world_sam",
         help="Comma-separated methods for comparison",
     )
     parser.add_argument("--compare-row-idx", type=int, default=0)
@@ -233,4 +283,4 @@ def parse_method_list(methods_str: str) -> List[str]:
 def resolve_dataset_dir(args: argparse.Namespace, method: str, multi: bool) -> Path:
     if args.dataset_dir:
         return args.dataset_dir / method if multi else args.dataset_dir
-    return args.root / f"dataset_yolo_{method}"
+    return args.root / "dataset_yolo" / method

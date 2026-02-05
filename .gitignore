@@ -1,7 +1,7 @@
-dataset/interview_perception_exam01_0.db3
-output/**/*.png
+*/interview_perception_exam01_0.db3
 *.pt
-dataset_yolo*/images/*/*.png
+__pycache__
+dataset_yolo*
 output/
 weights/
 third_party/

@@ -50,7 +50,7 @@ Notebook: `notebooks/train_segmentation.ipynb` (run locally with Jupyter).
 ### Workflow Overview
 
 1. Load RGB + thermal pairs from `output/`.
-2. Select a mask generation method (`thermal`, `thermal_cluster`, `sam`, `sam_v2`, `sam_v3`, `sam_v4`).
+2. Select a mask generation method (`thermal`, `thermal_cluster`, `sam`, `sam_v2`, `sam_v3`, `groundingdino`).
 3. Preview the mask quality.
 4. Export YOLO segmentation labels to `dataset_yolo_<method>/`.
 5. Train YOLOv8-seg with the exported labels.
@@ -69,7 +69,7 @@ repeatability across methods.
 
 ```bash
 python3 scripts/seg_export.py \
-  --mask-method sam_v4 \
+  --mask-method groundingdino \
   --val-ratio 0.1 \
   --split-seed 0
 ```
@@ -114,7 +114,7 @@ python3 scripts/seg_train.py --train-all
 - **sam (v1)**: SAM automatic mask generator (no prompts) with optional thresholds.
 - **sam_v2**: thermal-guided SAM (centroid + rough box prompt).
 - **sam_v3**: tuned SAM auto masks + center/area filtering for noise suppression.
-- **sam_v4**: Grounding DINO text prompt → box → SAM mask.
+- **groundingdino**: Grounding DINO text prompt → box → SAM mask.
 
 ### Label Metrics (Heuristic)
 
@@ -160,7 +160,7 @@ masks but is highly fragmented; it likely needs better prompts or post-processin
 2. Download a checkpoint (e.g., `sam_vit_b_01ec64.pth`) to `ROOT/weights/`.
 3. Ensure `torch` is installed and CUDA is available for speed.
 
-### Grounding DINO Setup (for `sam_v4`)
+### Grounding DINO Setup (for `groundingdino`)
 
 Run the helper script to clone + install Grounding DINO dependencies:
 
@@ -169,7 +169,7 @@ bash scripts/install_grounding_dino.sh
 ```
 
 Then download a checkpoint (e.g. `groundingdino_swint_ogc.pth`) to `ROOT/weights/`
-and pass the config/ckpt paths when running `sam_v4`.
+and pass the config/ckpt paths when running `groundingdino`.
 
 ## Library Survey
 

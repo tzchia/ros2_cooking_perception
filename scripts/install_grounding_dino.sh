@@ -53,7 +53,7 @@ echo "\nNext steps:"
 cat <<EOF
 1) Download a GroundingDINO checkpoint (e.g. groundingdino_swint_ogc.pth)
    and place it under: ${ROOT_DIR}/weights/
-2) Provide config + checkpoint to sam_v4, e.g.
+2) Provide config + checkpoint to groundingdino, e.g.
    --dino-config ${TARGET_DIR}/groundingdino/config/GroundingDINO_SwinT_OGC.py \
    --dino-checkpoint ${ROOT_DIR}/weights/groundingdino_swint_ogc.pth
 3) If you need CUDA wheels, set TORCH_INDEX_URL before running:
