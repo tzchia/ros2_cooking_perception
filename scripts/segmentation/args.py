@@ -1,4 +1,3 @@
-"""Argument parsing and shared path helpers."""
 from __future__ import annotations
 
 import argparse
@@ -30,22 +29,56 @@ def parse_args() -> argparse.Namespace:
         "--mask-method",
         type=str,
         default="thermal",
-        choices=["thermal", "thermal_cluster", "sam", "sam_v2", "sam_v3", "groundingdino", "florence2", "yolo_world_sam"],
+        choices=["thermal", "thermal_cluster", "sam", "sam_v2", "sam_v3", "sam2", "hq_sam", "groundingdino", "florence2", "yolo_world_sam"],
         help="Mask generation method",
     )
     parser.add_argument(
         "--methods",
         type=str,
-        default="thermal,thermal_cluster,sam,sam_v2,sam_v3,groundingdino,florence2,yolo_world_sam",
+        default="thermal,thermal_cluster,sam,sam_v2,sam2,hq_sam,groundingdino",
         help="Comma-separated method list for multi-run actions",
     )
     parser.add_argument("--thermal-low", type=float, default=0.6)
     parser.add_argument("--cluster-k", type=int, default=3)
     parser.add_argument("--cluster-iters", type=int, default=10)
     parser.add_argument("--cluster-min-ratio", type=float, default=0.002)
+    
+    # SAM Generic
     parser.add_argument("--sam-model-type", type=str, default="vit_b")
     parser.add_argument("--sam-topk", type=int, default=20)
     parser.add_argument("--sam-low", type=float, default=None)
+    
+    # SAM 1 Checkpoint
+    parser.add_argument(
+        "--sam-checkpoint",
+        type=Path,
+        default=None,
+        help="SAM v1 checkpoint path (default: <root>/weights/sam_vit_b_01ec64.pth)",
+    )
+
+    # HQ-SAM Arguments
+    parser.add_argument(
+        "--hq-sam-checkpoint",
+        type=Path,
+        default=None,
+        help="HQ-SAM checkpoint path (default: <root>/weights/sam_hq_vit_b.pth)",
+    )
+
+    # SAM 2 Arguments
+    parser.add_argument(
+        "--sam2-config",
+        type=str,
+        default="sam2_hiera_l.yaml",
+        help="SAM 2 config file name (e.g. sam2_hiera_l.yaml, sam2_hiera_b+.yaml)",
+    )
+    parser.add_argument(
+        "--sam2-checkpoint",
+        type=Path,
+        default=None,
+        help="SAM 2 checkpoint path (default: <root>/weights/sam2_hiera_large.pt)",
+    )
+
+    # SAM Auto-Mask Params
     parser.add_argument(
         "--sam-auto-min-area",
         type=int,
@@ -88,6 +121,8 @@ def parse_args() -> argparse.Namespace:
         default=0.6,
         help="SAM v3 post-filter center box fraction (0–1)",
     )
+    
+    # Grounding DINO
     parser.add_argument(
         "--dino-config",
         type=Path,
@@ -106,8 +141,9 @@ def parse_args() -> argparse.Namespace:
         default="black wok, cooking pot",
         help="Grounding DINO text prompt, e.g. 'pan' or 'wok'",
     )
-    parser.add_argument("--dino-box-threshold", type=float, default=0.35) # original 0.35
+    parser.add_argument("--dino-box-threshold", type=float, default=0.35) 
     parser.add_argument("--dino-text-threshold", type=float, default=0.25)
+    
     # Florence-2 arguments
     parser.add_argument(
         "--florence2-model-id",
@@ -121,6 +157,7 @@ def parse_args() -> argparse.Namespace:
         default="black wok,cooking pot",
         help="Florence-2 text prompt for referring expression segmentation",
     )
+    
     # YOLO-World + SAM arguments
     parser.add_argument(
         "--yolo-world-model",
@@ -146,12 +183,8 @@ def parse_args() -> argparse.Namespace:
         default=0.15,
         help="YOLO-World confidence threshold (lower = more detections)",
     )
-    parser.add_argument(
-        "--sam-checkpoint",
-        type=Path,
-        default=None,
-        help="SAM checkpoint path (default: <root>/weights/sam_vit_b_01ec64.pth)",
-    )
+    
+    # Dataset & Training
     parser.add_argument(
         "--dataset-dir",
         type=Path,
@@ -197,7 +230,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--compare-methods",
         type=str,
-        default="thermal,thermal_cluster,sam,sam_v2,sam_v3,groundingdino,florence2,yolo_world_sam",
+        default="thermal,thermal_cluster,sam,sam_v2,sam2,hq_sam,groundingdino,florence2",
         help="Comma-separated methods for comparison",
     )
     parser.add_argument("--compare-row-idx", type=int, default=0)

@@ -6,15 +6,15 @@ import argparse
 
 def update_readme(args: argparse.Namespace) -> None:
     readme_path = args.root / "README.md"
-    start_marker = "<!-- NOTEBOOK_PARAMS_START -->"
-    end_marker = "<!-- NOTEBOOK_PARAMS_END -->"
+    start_marker = ""
+    end_marker = ""
 
     param_rows = [
         {
             "Parameter": "MASK_METHOD",
             "Applies To": "all",
             "Meaning": "Select mask generation method",
-            "Notes": "`thermal`, `thermal_cluster`, `sam`, `sam_v2`, `sam_v3`, `groundingdino`",
+            "Notes": "`thermal`, `thermal_cluster`, `sam`, `sam_v2`, `sam2`, `hq_sam`, `groundingdino`",
         },
         {
             "Parameter": "THERMAL_LOW",
@@ -35,28 +35,40 @@ def update_readme(args: argparse.Namespace) -> None:
             "Notes": "more ⇒ stable clusters",
         },
         {
-            "Parameter": "CLUSTER_MIN_RATIO",
-            "Applies To": "thermal_cluster",
-            "Meaning": "Minimum cluster size fraction",
-            "Notes": "fallback to `thermal` if too small",
-        },
-        {
             "Parameter": "SAM_MODEL_TYPE",
-            "Applies To": "sam, sam_v2, sam_v3, groundingdino",
+            "Applies To": "sam, sam_v2, sam_v3, hq_sam, groundingdino",
             "Meaning": "SAM backbone (`vit_b`, `vit_l`, `vit_h`)",
             "Notes": "must match checkpoint",
         },
         {
             "Parameter": "SAM_TOPK",
-            "Applies To": "sam_v2",
+            "Applies To": "sam_v2, sam2, hq_sam",
             "Meaning": "Number of hottest points as prompts",
             "Notes": "larger ⇒ more guidance",
         },
         {
             "Parameter": "SAM_LOW",
-            "Applies To": "sam_v2",
+            "Applies To": "sam_v2, sam2, hq_sam",
             "Meaning": "Thermal threshold for SAM prompts",
             "Notes": "usually = `THERMAL_LOW`",
+        },
+        {
+            "Parameter": "HQ_SAM_CHECKPOINT",
+            "Applies To": "hq_sam",
+            "Meaning": "HQ-SAM weights path",
+            "Notes": "default `weights/sam_hq_vit_b.pth`",
+        },
+        {
+            "Parameter": "SAM2_CONFIG",
+            "Applies To": "sam2",
+            "Meaning": "SAM 2 config YAML",
+            "Notes": "e.g., `sam2_hiera_l.yaml`",
+        },
+        {
+            "Parameter": "SAM2_CHECKPOINT",
+            "Applies To": "sam2",
+            "Meaning": "SAM 2 weights path",
+            "Notes": "default `weights/sam2_hiera_large.pt`",
         },
         {
             "Parameter": "SAM_AUTO_MIN_AREA",
@@ -75,30 +87,6 @@ def update_readme(args: argparse.Namespace) -> None:
             "Applies To": "sam",
             "Meaning": "SAM auto-mask stability_score_thresh",
             "Notes": "None uses SAM default",
-        },
-        {
-            "Parameter": "SAM_V3_MIN_AREA",
-            "Applies To": "sam_v3",
-            "Meaning": "SAM v3 min_mask_region_area",
-            "Notes": "higher filters noise",
-        },
-        {
-            "Parameter": "SAM_V3_PRED_IOU",
-            "Applies To": "sam_v3",
-            "Meaning": "SAM v3 pred_iou_thresh",
-            "Notes": "higher = stricter",
-        },
-        {
-            "Parameter": "SAM_V3_STABILITY",
-            "Applies To": "sam_v3",
-            "Meaning": "SAM v3 stability_score_thresh",
-            "Notes": "higher = stricter",
-        },
-        {
-            "Parameter": "SAM_V3_CENTER_FRAC",
-            "Applies To": "sam_v3",
-            "Meaning": "Center filter box fraction",
-            "Notes": "0–1 of image size",
         },
         {
             "Parameter": "DINO_CONFIG",
@@ -149,82 +137,10 @@ def update_readme(args: argparse.Namespace) -> None:
             "Notes": "keeps same split across methods",
         },
         {
-            "Parameter": "SPLIT_FILE",
-            "Applies To": "export/train",
-            "Meaning": "Saved train/val split CSV",
-            "Notes": "defaults to output/split_train_val.csv",
-        },
-        {
-            "Parameter": "REFRESH_SPLIT",
-            "Applies To": "export/train",
-            "Meaning": "Regenerate train/val split",
-            "Notes": "overwrites saved split",
-        },
-        {
-            "Parameter": "METHODS",
-            "Applies To": "multi-run",
-            "Meaning": "Methods used for export/train-all",
-            "Notes": "comma-separated list",
-        },
-        {
-            "Parameter": "COMPARE_METHODS",
-            "Applies To": "comparison",
-            "Meaning": "Methods to show in side-by-side plot",
-            "Notes": "list of method names",
-        },
-        {
-            "Parameter": "COMPARE_ROW_IDX",
-            "Applies To": "comparison",
-            "Meaning": "Row index from index.csv to preview",
-            "Notes": "default 0",
-        },
-        {
-            "Parameter": "COMPARE_OVERLAY",
-            "Applies To": "comparison",
-            "Meaning": "Overlay mask on RGB instead of raw mask",
-            "Notes": "`True`/`False`",
-        },
-        {
-            "Parameter": "COMPARE_ALPHA",
-            "Applies To": "comparison",
-            "Meaning": "Mask overlay alpha",
-            "Notes": "0–1",
-        },
-        {
-            "Parameter": "EVAL_METHODS",
-            "Applies To": "metrics",
-            "Meaning": "Methods to evaluate",
-            "Notes": "defaults to `COMPARE_METHODS`",
-        },
-        {
-            "Parameter": "EVAL_MAX_SAMPLES",
-            "Applies To": "metrics",
-            "Meaning": "Max samples to evaluate",
-            "Notes": "subset for speed",
-        },
-        {
-            "Parameter": "EVAL_SEED",
-            "Applies To": "metrics",
-            "Meaning": "Random seed for sampling",
-            "Notes": "reproducible metrics",
-        },
-        {
             "Parameter": "TRAIN_ALL",
             "Applies To": "training",
             "Meaning": "Train YOLO for all methods",
             "Notes": "creates per-method runs",
-        },
-        {
-            "Parameter": "TRAIN_SKIP_EXISTING",
-            "Applies To": "training",
-            "Meaning": "Skip training if results.csv exists",
-            "Notes": "keeps prior runs, still reports metrics",
-        },
-        {
-            "Parameter": "TRAINING_OUT",
-            "Applies To": "training",
-            "Meaning": "Save training summary CSV",
-            "Notes": "optional output path",
         },
     ]
 
