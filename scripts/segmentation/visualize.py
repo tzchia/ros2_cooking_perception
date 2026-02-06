@@ -1,4 +1,4 @@
-"""Visualization script with Multi-Class Coloring and Type Safety."""
+"""Visualization helpers with Multi-Class Coloring."""
 from __future__ import annotations
 
 import argparse
@@ -18,38 +18,33 @@ from segmentation.methods import generate_mask_by_method
 def overlay_multiclass_mask(
     image: np.ndarray, mask: np.ndarray, alpha: float = 0.5
 ) -> np.ndarray:
-    """
-    Draws a semi-transparent colored mask for each class ID.
-    Handles int32 masks correctly by processing each class as uint8.
-    """
-    if mask is None or mask.sum() == 0:
+    """Draws a semi-transparent colored mask for each class ID."""
+    if mask.sum() == 0:
         return image
         
     overlay = image.copy()
     unique_ids = np.unique(mask)
     
-    # Use matplotlib colormap 'tab10' (High contrast discrete colors)
+    # Use matplotlib colormap for distinct colors (skip background)
     cmap = plt.get_cmap("tab10")
     
     for uid in unique_ids:
-        if uid == 0: continue # Skip background
+        if uid == 0: continue
         
-        # 1. Get Color (uid-1 to align with 0-indexed colormap)
+        # Determine color (uid-1 to align with 0-indexed colormap)
         color_rgb = cmap((uid - 1) % 10)[:3] 
-        # Convert 0-1 float to 0-255 int
+        color_bgr = tuple(int(c * 255) for c in color_rgb) # CV2 uses BGR if needed, but plt uses RGB. 
+        # Assuming input image is RGB for matplotlib
         color_int = tuple(int(c * 255) for c in color_rgb)
 
-        # 2. Create Binary Mask for this specific class (int32 -> bool)
-        class_mask_bool = (mask == uid)
+        class_mask = (mask == uid)
         
-        # 3. Apply Color Overlay
-        overlay[class_mask_bool] = color_int
+        # Color overlay
+        overlay[class_mask] = color_int
         
-        # 4. Draw Contours (MUST convert to uint8 for OpenCV)
-        class_mask_uint8 = class_mask_bool.astype(np.uint8) * 255
-        
-        contours, _ = cv2.findContours(class_mask_uint8, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cv2.drawContours(overlay, contours, -1, (255, 255, 255), 1)
+        # Contours
+        contours, _ = cv2.findContours(class_mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        cv2.drawContours(overlay, contours, -1, (255, 255, 255), 2)
 
     return cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
 
@@ -68,7 +63,8 @@ def create_comparison_grid(
     n_cols = 2 + len(methods)
     n_rows = len(indices)
     
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(3 * n_cols, 3 * n_rows), squeeze=False)
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(4 * n_cols, 4 * n_rows))
+    if n_rows == 1: axes = axes[np.newaxis, :]
         
     for row_idx, data_idx in enumerate(indices):
         data_row = df.iloc[data_idx]
@@ -91,7 +87,7 @@ def create_comparison_grid(
                 mask = generate_mask_by_method(rgb, thermal, method, args)
                 viz = overlay_multiclass_mask(rgb, mask, alpha=0.5)
             except Exception as e:
-                print(f"Error generating {method} for sample {data_idx}: {e}")
+                print(f"Error {method} sample {data_idx}: {e}")
                 viz = np.zeros_like(rgb)
             
             axes[row_idx, m_idx + 2].imshow(viz)
@@ -99,7 +95,7 @@ def create_comparison_grid(
             axes[row_idx, m_idx + 2].axis("off")
             
     plt.tight_layout()
-    save_path = output_dir / "comparison_grid.jpg"
+    save_path = args.output_dir / "comparison_grid.jpg"
     plt.savefig(save_path, dpi=150)
     print(f"Comparison grid saved to: {save_path}")
 
@@ -108,8 +104,6 @@ if __name__ == "__main__":
     args = parse_args()
     output_dir, index_csv = prepare_io(args)
     df = pd.read_csv(index_csv)
-    
     methods = parse_method_list(args.methods)
     print(f"Visualizing methods: {methods}")
-    
     create_comparison_grid(df, output_dir, args, methods, num_samples=5)
