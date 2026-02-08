@@ -1,0 +1,51 @@
+# Core dependencies
+numpy
+pillow
+opencv-python
+
+# ROS2 bag handling
+rosbags
+
+# Data manipulation
+pandas
+polars
+
+# Visualization
+matplotlib
+
+# Machine Learning / Deep Learning
+torch
+torchvision
+ultralytics
+
+# SAM (Segment Anything)
+segment-anything
+sam2
+mobile-sam
+
+# Grounding DINO (text-to-box detection)
+groundingdino
+
+# Hugging Face ecosystem
+transformers
+huggingface-hub
+timm
+
+# Computer Vision utilities
+supervision
+sahi
+pycocotools
+scipy
+shapely
+
+# Configuration / utilities
+omegaconf
+hydra-core
+pyyaml
+tqdm
+pybboxes
+
+# Jupyter (for notebooks)
+ipykernel
+jupyter-client
+jupyter-core

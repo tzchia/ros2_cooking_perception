@@ -1,17 +1,58 @@
 # ROS2 Cooking Perception
 
+## To Do List
+
+- [x] 調查可用的函式庫與開源模型 (Library Survey)
+- [x] 資料提取：從 RGBT rosbag 提取 RGB + 熱成像幀
+- [x] 探索偽標籤 (pseudo-label) 方法：熱閾值、聚類、SAM
+- [x] 實作多種分割標註方法 (thermal, thermal_cluster, sam, hq-sam, sam2, yolo-world, sam-sahi, manual)
+- [x] 資料集匯出為 YOLO 格式
+- [x] YOLOv11-seg 模型訓練流程
+- [x] 標註品質評估與比較 (metrics & benchmark)
+- [ ] 模型性能優化與驗證
+- [ ] 完整文件與結果分析
+
+## Library Survey
+
+根據 `requirements.txt`，本專案使用以下主要函式庫與開源模型：
+
+### 核心函式庫
+- **rosbags**: ROS2 bag 檔案讀取
+- **numpy**: 數值運算
+- **pillow (PIL)**: 圖像處理
+- **opencv-python**: 電腦視覺與圖像處理
+- **pandas / polars**: 資料處理與分析
+- **matplotlib**: 資料視覺化
+
+### 深度學習框架與模型
+- **torch / torchvision**: PyTorch 深度學習框架
+- **ultralytics**: YOLOv8-seg 訓練與推論
+- **segment-anything (SAM)**: Meta 的 promptable 分割模型
+- **sam2**: SAM 2.0 版本
+- **mobile-sam**: 輕量化 SAM 模型
+- **groundingdino**: 文字提示目標檢測模型 (text-to-box)
+
+### 輔助工具
+- **transformers / huggingface-hub**: Hugging Face 模型生態
+- **supervision**: 電腦視覺工具庫
+- **sahi**: 圖像切片與小目標檢測
+- **pycocotools**: COCO 格式處理
+- **omegaconf / hydra-core**: 配置管理
+- **scipy / shapely**: 科學計算與幾何運算
+
+---
+
 ## Project Progression (Milestones)
 
 1. **Data extraction from RGBT bag** ✅
    - `scripts/extract_rgbt_bag.py` produces RGB + thermal frames and `index.csv`.
 2. **Pseudo-label exploration** ✅
-   - Thermal threshold, thermal + clustering, and SAM promptable masks (see notebook).
+   - Thermal threshold, thermal + clustering, and SAM promptable masks.
 3. **Dataset export for training** ✅
    - YOLO segmentation polygons generated per method.
 4. **Model training** 🟡
    - Ultralytics YOLOv8-seg baseline provided in notebook.
-5. **Real-time inference node** ⏳
-6. **Analysis & documentation** ⏳
+5. **Analysis & documentation** ⏳
 
 ## Repo Layout (Key Paths)
 
@@ -19,14 +60,6 @@
 - `output/` extracted frames and `index.csv`
 - `scripts/` data extraction scripts
 - `notebooks/train_segmentation.ipynb` full segmentation workflow
-
-## RGBT Compression Assumption
-
-`scripts/extract_rgbt_bag.py` reads **PNG-compressed** RGBT images from
-`/rgbt/rgbt/compressed` (ROS2 `sensor_msgs/CompressedImage`). It **does not
-perform compression**; it only decodes the PNG bytes, then splits RGB and the
-thermal alpha channel. The channel order is determined by `msg.format` when
-available (BGRA vs RGBA).
 
 ## Dataset Extraction
 
@@ -170,10 +203,3 @@ bash scripts/install_grounding_dino.sh
 
 Then download a checkpoint (e.g. `groundingdino_swint_ogc.pth`) to `ROOT/weights/`
 and pass the config/ckpt paths when running `groundingdino`.
-
-## Library Survey
-
-- **rclpy**: ROS2 Python client.
-- **OpenCV**: Image processing & polygon conversion.
-- **Ultralytics YOLO**: Instance segmentation training (YOLOv8-seg in notebook).
-- **Segment Anything (SAM)**: Promptable segmentation for auto-labeling.
