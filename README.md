@@ -492,8 +492,8 @@ names:
 
 #### 4.4 最終產出
 
-- **最終模型權重**：`runs/segment/seg_manual/11n_v2/weights/best.pt`
-- **Inference Video**：`output/11n_v2_inference.mp4`
+- **最終模型權重**：`runs/segment/seg_manual/weights/best.pt`
+- **Inference Video**：[output/11n_v2_inference.mp4](https://drive.google.com/file/d/17KPO7H1Rz63kKaMr21mrfXSe0oSGR4Gb/view?usp=sharing)
 
 **Inference 效能**（全 4400 幀，由 `scripts/seg_to_video.sh` 產出）：
 

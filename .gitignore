@@ -1,5 +1,6 @@
 */interview_perception_exam01_0.db3
 *.pt
+!runs/segment/seg_manual/weights/best.pt
 *.cache
 __pycache__
 pretrained_weights/
@@ -16,12 +17,8 @@ dataset_yolo/sam2_dino
 dataset_yolo/sam2_sahi
 dataset_yolo/thermal_cluster
 dataset_yolo/thermal
-output/11n_v1_inference.mp4
-output/11s_v1_inference.mp4
-runs/segment/seg_manual/11n_v1
-runs/segment/seg_manual/11s_v1
-runs/segment/seg_manual/11n_v2
-runs/segment/seg_manual/11s_v2
+output/*.mp4
+runs/segment/seg_manual/11*
 runs/segment/seg_sam
 runs/segment/thermal
 runs/segment/thermal_cluster
