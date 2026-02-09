@@ -1,0 +1,9 @@
+path: /data3/TC/ros2_cooking_perception/dataset_yolo/manual
+train: images/train
+val: images/val
+names:
+  0: black wok
+  1: wooden handle spatula
+  2: fried egg
+  3: stainless steel bowl
+  4: thermometer gun

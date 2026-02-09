@@ -1,5 +1,6 @@
 */interview_perception_exam01_0.db3
 *.pt
+*.cache
 __pycache__
 pretrained_weights/
 third_party/
@@ -9,7 +10,7 @@ output/thermal_raw
 output/thermal_color
 dataset_yolo/archived
 dataset_yolo/images
-dastset_yolo/manual/labels-backup
+dataset_yolo/manual/labels-backup
 dataset_yolo/qwen_sam
 dataset_yolo/sam2_dino
 dataset_yolo/sam2_sahi

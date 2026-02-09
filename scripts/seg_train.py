@@ -24,10 +24,18 @@ def main() -> None:
         return
 
     if args.train:
-        dataset_dir = resolve_dataset_dir(args, args.mask_method, multi=False)
-        if not dataset_ready(dataset_dir):
-            export_yolo(df, output_dir, args, method=args.mask_method, dataset_dir=dataset_dir)
-        run_dir = train_yolo(dataset_dir, args, args.mask_method)
+        if args.train_data:
+            dataset_yaml = args.train_data
+            if not dataset_yaml.is_absolute():
+                dataset_yaml = args.root / dataset_yaml
+            if not dataset_yaml.exists():
+                raise FileNotFoundError(f"Missing dataset yaml: {dataset_yaml}")
+            run_dir = train_yolo(None, args, args.mask_method, dataset_yaml=dataset_yaml)
+        else:
+            dataset_dir = resolve_dataset_dir(args, args.mask_method, multi=False)
+            if not dataset_ready(dataset_dir):
+                export_yolo(df, output_dir, args, method=args.mask_method, dataset_dir=dataset_dir)
+            run_dir = train_yolo(dataset_dir, args, args.mask_method)
         summary_df = pd.DataFrame([collect_train_metrics(run_dir, args.mask_method)])
         print(summary_df)
         if args.training_out:

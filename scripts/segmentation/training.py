@@ -11,7 +11,12 @@ from segmentation.export import dataset_ready, export_yolo
 from segmentation.args import resolve_dataset_dir
 
 
-def train_yolo(dataset_dir: Path, args: argparse.Namespace, method: str) -> Path:
+def train_yolo(
+    dataset_dir: Path | None,
+    args: argparse.Namespace,
+    method: str,
+    dataset_yaml: Path | None = None,
+) -> Path:
     try:
         from ultralytics import YOLO
     except ImportError as exc:
@@ -20,8 +25,13 @@ def train_yolo(dataset_dir: Path, args: argparse.Namespace, method: str) -> Path
     project_dir = args.train_project or (args.root / "runs" / "segment")
     name = f"{args.train_name_prefix}_{method}"
     model = YOLO(args.yolo_model)
+    if dataset_yaml is None:
+        if dataset_dir is None:
+            raise ValueError("dataset_dir or dataset_yaml must be provided for training")
+        dataset_yaml = dataset_dir / "dataset.yaml"
+
     model.train(
-        data=str(dataset_dir / "dataset.yaml"),
+        data=str(dataset_yaml),
         imgsz=args.imgsz,
         epochs=args.epochs,
         batch=args.batch,
